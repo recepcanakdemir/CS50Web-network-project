@@ -2,8 +2,8 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required 
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -37,9 +37,17 @@ def create_new_post(request):
     return JsonResponse({"message": "Your post is published"}, status=201)
 
 @login_required
-def like_the_post(request):
-    #Like.objects.create(request.user,clicked_buttons_post )
-    pass
+def like_unlike(request,post_id):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if is_ajax:
+        post = get_object_or_404(User, id=post_id)
+
+        if request.method == 'PUT':
+            like = Like.objects.create(user = request.user, post = post)
+            like.save()
+    else:
+        return HttpResponseBadRequest('Invalid request')
 
 
 def login_view(request):
