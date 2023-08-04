@@ -1,0 +1,15 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+{% if user.is_authenticated %}
+    <div id="create-new-post-view " class="border border-dark w-50 row justify-content-center align-items-center">
+        <h2>Write Your Toughts Here</h2>
+        <form id="create-new-post">
+            <textarea class="m-2" id="text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
+            <input type="submit" class="btn btn-primary"/>
+        </form>
+    </div>
+{% endif %}
+    <div class="row justify-content-center m-2 text-center" id="all-posts">
+    </div>
+{% endblock %}
