@@ -7,11 +7,11 @@ class User(AbstractUser):
     image = models.URLField(null=True,  blank=True)
     def serialize(self):
         return {
-            "id":self.id,
+            #"id":self.pk,
             "nickname":self.nickname,
         }
     def __str__(self):
-        return self.username
+        return self.id
 
 class Post(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, null = False, default = False)
@@ -22,7 +22,7 @@ class Post(models.Model):
 
     def serialize(self):
         return {
-            "id":self.id,
+            "id":self.pk,
             "creator":self.creator.username,
             "content":self.content,
             "created":self.created_at.strftime("%b %d %Y, %I:%M %p"),

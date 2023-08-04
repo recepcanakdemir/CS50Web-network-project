@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required 
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render,redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -37,6 +37,7 @@ def create_new_post(request):
 
     return JsonResponse({"message": "Your post is published"}, status=201)
 
+
 @login_required
 def like_unlike(request,post_id):
     if request.method == 'PUT':
@@ -56,8 +57,25 @@ def like_unlike(request,post_id):
 
         return JsonResponse({'likes': post.likes})
     else:
-        return JsonResponse({'error': 'Invalid request'}, status=400)
+        return JsonResponse({'error': 'Invalid request, request must be via PUT'}, status=400)
     
+
+def edit_post(request, post_id):
+    try:
+        post = Post.objects.get(pk = post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({"error":"There is no post with this id"})
+
+    if request.method == 'PUT':
+        data = json.loads(request.body)
+        if data.get("content") is not None:
+            post.content = data["content"]
+        post.save()
+        return redirect("index")
+
+
+
+
 def login_view(request):
     if request.method == "POST":
 
