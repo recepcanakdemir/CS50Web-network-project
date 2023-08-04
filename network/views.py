@@ -16,6 +16,7 @@ def index(request):
 
 @csrf_exempt
 def create_new_post(request):
+
     #creating new post must be via POST request
     if request.method != "POST":
         posts = Post.objects.all().order_by('-created_at')
@@ -38,18 +39,25 @@ def create_new_post(request):
 
 @login_required
 def like_unlike(request,post_id):
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if request.method == 'PUT':
+        post = get_object_or_404(Post, id=post_id)
+        existing_like = Like.objects.filter(user=request.user, post=post).first()
 
-    if is_ajax:
-        post = get_object_or_404(User, id=post_id)
+        if existing_like:
+            # If the user has already liked the post, unlike it
+            existing_like.delete()
+            post.likes -= 1
+            post.save()
+        else:
+            # If the user has not liked the post, like it
+            Like.objects.create(user=request.user, post=post)
+            post.likes += 1
+            post.save()
 
-        if request.method == 'PUT':
-            like = Like.objects.create(user = request.user, post = post)
-            like.save()
+        return JsonResponse({'likes': post.likes})
     else:
-        return HttpResponseBadRequest('Invalid request')
-
-
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+    
 def login_view(request):
     if request.method == "POST":
 

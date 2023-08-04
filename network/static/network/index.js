@@ -33,29 +33,40 @@ function getCookie(name) {
   }
   return cookieValue;
 }
-function likePost(e){
-    e.preventDefault();
-    post =  e.target.closest('.post');
-    const amountOfLikes = parseInt(post.querySelector('#likes').innerHTML.split(" ")[0]);
-    console.log(amountOfLikes);
-    const postID =post.getAttribute('id');
-    console.log(postID);
 
-    fetch(`/posts/${postID}`, {
-    method: "PUT",
-    credentials: "same-origin",
+function likePost(e) {
+  e.preventDefault();
+  const post = e.target.closest('.post');
+  const amountOfLikes = parseInt(post.querySelector('#likes').innerHTML.split(" ")[0]);
+  const postID = post.getAttribute('id');
+let liked = false 
+  // Use AJAX to send the post ID to the backend
+  fetch(`/posts/${postID}`, {
+    method: 'PUT',
     headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRFToken": getCookie("csrftoken"),  // don't forget to include the 'getCookie' function
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': getCookie('csrftoken'), // Don't forget to include the CSRF token
     },
-    body: JSON.stringify({
-        likes: amountOfLikes + 1,
-    })
-    })
-    .then(response => response.json())
-    .then(data => {
-    console.log(data);
-    });
+  })
+  .then(response => {
+    //if (response.ok && liked === false) {
+      //post.querySelector('#likes').innerHTML = `${amountOfLikes + 1} Likes`;
+      //liked = true
+    //}else if(liked === true){
+      //post.querySelector('#likes').innerHTML = `${amountOfLikes - 1} Likes`;
+    //} 
+    //else {
+      //console.error('Failed to like the post.');
+    //}
+    return response.json()
+  }).then(data => {
+     post.querySelector('#likes').innerHTML = `${data.likes} Likes`
+
+  })
+  .catch(error => {
+    // Handle fetch errors if necessary
+    console.error('Fetch error:', error);
+  });
 }
 
 async function createNewPost(){
