@@ -60,7 +60,7 @@ function updatePost(e) {
   }else if(e.target.classList.contains('edit-button')){
     // if edit button is clicked display edit textarea.
     const post = e.target.closest('.post');
-    editPost(post)
+    displayEditView(post)
  
   }else if(e.target.classList.contains('save-button')){
     const post = e.target.closest('.post');
@@ -79,28 +79,36 @@ function updatePost(e) {
         content:newContext,
       })
     })
-
-    //console.log(post.childNodes[1].childNodes[1])
-    post.childNodes[1].className = 'd-none'
-    post.childNodes[3].className = 'd-block'
+    updatePostContent(post, newContext)
+    hideEditView(post);
   }
   else{
     return
   }
 }
 
-async function editPost(post){
+function updatePostContent(post, newContext){
+  post.childNodes[3].childNodes[3].innerHTML = newContext
+}
+
+function hideEditView(post){
+ //console.log(post.childNodes[1].childNodes[1])
+    post.childNodes[1].className = 'd-none'
+    post.childNodes[3].className = 'd-block'
+}
+function displayEditView(post){
  // getPostById(postID)
    console.log(post.childNodes)
     // Get the second childNodes which is textarea to edit and get the fourth childNode 
     const edit_views = post.childNodes[1];
+    console.log("edit views",edit_views)
     const post_content_views = post.childNodes[3]
     
     edit_views.className = 'd-block'
     post_content_views.className = 'd-none'
     console.log("this is edit-views",edit_views.childNodes[1].childNodes[1])
     edit_views.childNodes[1].childNodes[1].value = post_content_views.childNodes[3].innerHTML
-    const postID = post.getAttribute('id');
+    
 }
 
 

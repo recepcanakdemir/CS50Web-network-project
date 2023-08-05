@@ -71,7 +71,7 @@ def edit_post(request, post_id):
         if data.get("content") is not None:
             post.content = data["content"]
         post.save()
-        return redirect("index")
+        return HttpResponse(status=204)
 
 
 
