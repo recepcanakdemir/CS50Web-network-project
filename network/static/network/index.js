@@ -21,7 +21,7 @@ async function getAllPosts(){
                 </form>
               </div>
                 <div id="post-content-view" class="d-block">
-                  <h5 class="card-title" id="user">${post.creator}</h5>
+                  <a href="users/${post.creator}/" id="user" class="username">${post.creator}</a>
                   <p class="card-text" id="content">${post.content}</p>
                   <p class="card-text" id="date">${post.created}</p>
                   <h4 class="card-text" id="likes">${post.likes} Likes</h5>
@@ -52,19 +52,35 @@ function getCookie(name) {
 
 //Like posts via AJAX PUT request
 function updatePost(e) {
-  e.preventDefault();
-  if(e.target.classList.contains('like-button')){
-    // If like-button is clicked then like the post
-    const post = e.target.closest('.post');
-    likePost(post)
-  }else if(e.target.classList.contains('edit-button')){
-    // if edit button is clicked display edit textarea.
-    const post = e.target.closest('.post');
-    displayEditView(post)
- 
-  }else if(e.target.classList.contains('save-button')){
-    const post = e.target.closest('.post');
-    const postID = post.getAttribute('id');
+  // e.preventDefault()
+    if(e.target.classList.contains('like-button')){
+      if(document.querySelector('#current-user')){
+        const post = e.target.closest('.post');
+        console.log(post)
+        likePost(post)
+      }else{
+        displayError(document.querySelector('#like-error'))
+      }
+    }else if(e.target.classList.contains('edit-button')){
+      const post = e.target.closest('.post');
+      console.log(post)
+      displayEditView(post)
+  
+    }else if(e.target.classList.contains('save-button')){
+      const post = e.target.closest('.post');
+      const newContext = saveTheChanges(post)
+      updatePostContent(post, newContext)
+      hideEditView(post);
+
+    }
+    else{
+      return
+    }
+
+}
+
+function saveTheChanges(post){
+  const postID = post.getAttribute('id');
     const newContext = post.childNodes[1].childNodes[1].childNodes[1].value
     console.log(newContext)
     console.log(postID)
@@ -79,12 +95,7 @@ function updatePost(e) {
         content:newContext,
       })
     })
-    updatePostContent(post, newContext)
-    hideEditView(post);
-  }
-  else{
-    return
-  }
+    return newContext
 }
 
 function updatePostContent(post, newContext){
@@ -92,12 +103,11 @@ function updatePostContent(post, newContext){
 }
 
 function hideEditView(post){
- //console.log(post.childNodes[1].childNodes[1])
     post.childNodes[1].className = 'd-none'
     post.childNodes[3].className = 'd-block'
 }
+
 function displayEditView(post){
- // getPostById(postID)
    console.log(post.childNodes)
     // Get the second childNodes which is textarea to edit and get the fourth childNode 
     const edit_views = post.childNodes[1];
@@ -113,28 +123,39 @@ function displayEditView(post){
 
 
 function likePost(post){
-    //const amountOfLikes = parseInt(post.querySelector('#likes').innerHTML.split(" ")[0]);
     const postID = post.getAttribute('id');
-    fetch(`/posts/${postID}`, {
-      method: 'PUT',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCookie('csrftoken'), // Don't forget to include the CSRF token
-      },
-    })
-    .then(response => {
-      return response.json()
-    }).then(data => {
-      console.log(data);
-      post.querySelector('#likes').innerHTML = `${data.likes} Likes`
+    try{
+      fetch(`/posts/${postID}`, {
+        method: 'PUT',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCookie('csrftoken'), // Don't forget to include the CSRF token
+        },
+      })
+      .then(response => {
+        return response.json()
+      }).then(data => {
+        console.log(data);
+        post.querySelector('#likes').innerHTML = `${data.likes} Likes`
 
-    })
-    .catch(error => {
-      // Handle fetch errors if necessary
-      console.error('Fetch error:', error);
-    });
+      })
+      .catch(error => {
+        console.log('Fetch error:', error);
+        const likeError = document.querySelector('#like-error');
+        displayError(likeError);
+      });
+    }catch(error){
+      console.log(error)
+    }
+
 }
 
+function displayError(error){
+  error.className = 'd-block'
+        setTimeout(() => {
+          error.className = 'd-none'
+        }, 2000);
+}
 
 async function getPostById(postID){
   const posts = await fetch('/posts').then(response => response.json)
@@ -150,7 +171,9 @@ async function createNewPost(){
         })
     })
     .then((response) => response.json())
-    .then(data => console.log(data))
+    .then(data =>{
+      console.log(data)
+    })
 }
 
 function init(){
@@ -162,6 +185,8 @@ function init(){
    else{
     console.log("hello")
    }
+   document.querySelector('#like-error').className = 'd-none'
+   //hideError(document.querySelector('#like-error'))
     //document.querySelector('#all-posts-link').addEventListener('click',getAllPosts)
     //do the things
 }

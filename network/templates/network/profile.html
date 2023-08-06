@@ -1,0 +1,8 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div>{{user.username}}</div>
+    {% for post in posts %}
+        <div>{{post.content}}</div>
+    {% endfor %}
+{% endblock %}

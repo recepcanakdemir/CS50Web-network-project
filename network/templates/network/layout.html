@@ -35,6 +35,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Log In</a>
                     </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'register' %}">Register</a>
                     </li>
@@ -42,7 +43,13 @@
               </ul>
             </div>
           </nav>
-        
+
+          <div id="like-error" class="">
+            <div class="alert alert-danger" role="alert">
+                You should be logged in to be able to like this post
+            </div>
+          </div>
+
         <div class="body">
             {% block body %}
             {% endblock %}

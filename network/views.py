@@ -23,7 +23,6 @@ def create_new_post(request):
         for post in posts:
             post.likes = len(Like.objects.all().filter(post = post))
             post.save()
-
         return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
@@ -58,8 +57,17 @@ def like_unlike(request,post_id):
         return JsonResponse({'likes': post.likes})
     else:
         return JsonResponse({'error': 'Invalid request, request must be via PUT'}, status=400)
-    
 
+def user(request,username):
+    user = get_object_or_404(User, username = username)
+    posts = Post.objects.all().filter(creator = user)
+    return render(request, "network/profile.html", {
+        "user":username,
+        "posts":posts
+
+    })
+def main(request):
+    return render(request, "network/main.html")
 def edit_post(request, post_id):
     try:
         post = Post.objects.get(pk = post_id)
