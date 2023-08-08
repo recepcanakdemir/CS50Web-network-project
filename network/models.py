@@ -11,7 +11,7 @@ class User(AbstractUser):
             "nickname":self.nickname,
         }
     def __str__(self):
-        return self.id
+        return self.username
 
 class Post(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, null = False, default = False)

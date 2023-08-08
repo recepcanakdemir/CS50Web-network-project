@@ -6,68 +6,65 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedire
 from django.shortcuts import get_object_or_404, render,redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 from .models import User, Post, Like, Follower
 
 
 def index(request):
-    return render(request, "network/index.html")
+    all_posts = Post.objects.all().order_by('-created_at')
+    return render(request, "network/index.html",{
+        "posts":all_posts,
+        "user":request.user
+    })
 
-
-@csrf_exempt
-def create_new_post(request):
-
-    #creating new post must be via POST request
-    if request.method != "POST":
-        posts = Post.objects.all().order_by('-created_at')
-        for post in posts:
-            post.likes = len(Like.objects.all().filter(post = post))
-            post.save()
-        return JsonResponse([post.serialize() for post in posts], safe=False)
-
-
-    data = json.loads(request.body)
-    #get content of post
-    post = Post(
-        creator=request.user,
-        content=data.get("content", ""),
-    )
-    post.save()
-
-    return JsonResponse({"message": "Your post is published"}, status=201)
-
-
+ 
 @login_required
+def create_new_post(request):
+    posts = Post.objects.all().order_by('-created_at')
+    if request.method == 'POST':
+        content = request.POST['content']
+        likes = 0
+        creator = request.user
+        new_post = Post.objects.create(content = content, likes = likes, creator = creator)
+        new_post.save()
+        #return render(request, "network/index.html", {"posts":posts})
+        return HttpResponseRedirect(request.headers['Referer'])
+    posts = Post.objects.all().order_by('-created_at')
+    return JsonResponse([post.serialize() for post in posts], safe=False)
+
+
+#@login_required
 def like_unlike(request,post_id):
-    if request.method == 'PUT':
-        post = get_object_or_404(Post, id=post_id)
-        existing_like = Like.objects.filter(user=request.user, post=post).first()
+    post = get_object_or_404(Post, id=post_id)
+    if request.user.is_authenticated:
+        if request.method == 'PUT':
+            existing_like = Like.objects.filter(user=request.user, post=post).first()
 
-        if existing_like:
-            # If the user has already liked the post, unlike it
-            existing_like.delete()
-            post.likes -= 1
-            post.save()
+            if existing_like:
+                # If the user has already liked the post, unlike it
+                existing_like.delete()
+                post.likes -= 1
+                post.save()
+            else:
+                # If the user has not liked the post, like it
+                Like.objects.create(user=request.user, post=post)
+                post.likes += 1
+                post.save()
+
+            return JsonResponse({'likes': post.likes})
         else:
-            # If the user has not liked the post, like it
-            Like.objects.create(user=request.user, post=post)
-            post.likes += 1
-            post.save()
-
-        return JsonResponse({'likes': post.likes})
+            return JsonResponse({'error': 'Invalid request, request must be via PUT'}, status=400)
     else:
-        return JsonResponse({'error': 'Invalid request, request must be via PUT'}, status=400)
+        return JsonResponse([{'error': 'User should be logged to be able to like the posts'}, {'likes': post.likes}], status=400)
 
-def user(request,username):
+def user_profile(request,username):
     user = get_object_or_404(User, username = username)
     posts = Post.objects.all().filter(creator = user)
-    return render(request, "network/profile.html", {
-        "user":username,
-        "posts":posts
-
+    return render(request, "network/profile.html",{
+        "user":user,
     })
-def main(request):
-    return render(request, "network/main.html")
+
 def edit_post(request, post_id):
     try:
         post = Post.objects.get(pk = post_id)

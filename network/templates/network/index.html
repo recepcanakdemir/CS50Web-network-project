@@ -4,15 +4,47 @@
 {% if user.is_authenticated %}
     <div id="create-new-post-view " class="border border-dark w-50 row justify-content-center align-items-center">
         <h2>Write Your Toughts Here</h2>
-        <form id="create-new-post">
-            <textarea class="m-2" id="text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
-            <input type="submit" class="btn btn-primary"/>
+        <form action = "{% url 'create_new_post' %}" method = "post" id="create-new-post">
+            {% csrf_token %}
+            <textarea class="m-2" name = "content"id="text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
+            <input id = "create-post-button" type="submit" class="btn btn-primary" disabled/>
         </form>
     </div>
 {% endif %}
 <div id="post-container">
-  
+<div id = "invalid-post-error">
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+    {{message}}
+        </div>
+    {% endfor %}
+{% endif %} 
+</div>
+ 
     <div id="all-posts" class="row justify-content-center m-2 text-center" >
+        {% for post in posts%}
+             `<div class="card" style="width: 18rem;">
+          <div class="card-body post" id={{post.id}}>
+              <div id="edit-view" class="d-none">
+                <form id="edit-selected-post">
+                  <textarea class="m-2" id="context-text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
+                  <input type="submit" class="btn btn-primary save-button" value="Save"/>
+                </form>
+              </div>  
+                <div id="post-content-view" class="d-block">
+                  <a href="#" id="user" class="username">{{post.creator}}</a>
+                  <p class="card-text" id="content">{{post.content}}</p>
+                  <p class="card-text" id="date">{{post.created}}</p>
+                  <h4 class="card-text" id="likes">{{post.likes}} Likes</h5>
+                  <a href="#" class="btn btn-primary like-button" aria-hidden="true">Like</a>
+                  {% if user == post.creator %}
+                    <a href="#" class="btn btn-success edit-button" aria-hidden="true">Edit</a>
+                  {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
     
 </div>
