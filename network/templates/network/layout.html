@@ -27,7 +27,7 @@
                 </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Following</a>
+                        <a href="{% url 'following_posts' %}" class="nav-link">Following</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
@@ -45,9 +45,9 @@
             </div>
           </nav>
 
-          <div id="like-error" class="">
-            <div class="alert alert-danger d-none" role="alert">
-                You should be logged in to be able to like this post
+          <div id="like-error" class="d-none">
+            <div class="alert alert-danger" role="alert">
+                You should be logged in to like this post
             </div>
           </div>
 

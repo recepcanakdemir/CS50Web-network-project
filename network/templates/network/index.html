@@ -33,9 +33,9 @@
                 </form>
               </div>  
                 <div id="post-content-view" class="d-block">
-                  <a href="#" id="user" class="username">{{post.creator}}</a>
+                  <a href="{% url 'load_profile' username=post.creator %}" id="user" class="username">{{post.creator}}</a>
                   <p class="card-text" id="content">{{post.content}}</p>
-                  <p class="card-text" id="date">{{post.created}}</p>
+                  <p class="card-text" id="date">{{post.created_at}}</p>
                   <h4 class="card-text" id="likes">{{post.likes}} Likes</h5>
                   <a href="#" class="btn btn-primary like-button" aria-hidden="true">Like</a>
                   {% if user == post.creator %}

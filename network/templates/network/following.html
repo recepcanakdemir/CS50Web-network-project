@@ -1,38 +1,7 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div id="user_name">{{profile_owner}}</div>
-    {% if not profile_owner == user.username %}
-    <div id="follow-unfollow">
-        <a href="#" id="follow-button" class="btn btn-primary follow-button" aria-hidden="true">Follow</a>
-    </div>
-    {% endif %}
-    <h4> Followers: <span id="followers">{{followers}}</span></h4>
-    <h4> Following: <span id="following">{{following}}</span></h4>
-
-    {% if user.is_authenticated %}
-        {% if profile_owner == visitor.username %}
-        <div id="create-new-post-view " class="border border-dark w-50 row justify-content-center align-items-center">
-            <h2>Write Your Toughts Here</h2>
-            <form action = "{% url 'create_new_post' %}" method = "post" id="create-new-post">
-                {% csrf_token %}
-                <textarea class="m-2" name = "content"id="text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
-                <input id = "create-post-button" type="submit" class="btn btn-primary" disabled/>
-            </form>
-        </div>
-        {% endif %}
-    {% endif %}
-    <div id="post-container">
-    <div id = "invalid-post-error">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-danger" role="alert">
-        {{message}}
-            </div>
-        {% endfor %}
-    {% endif %} 
-    </div>
-
+    <div>{{following}}</div>
     <div id="all-posts" class="row justify-content-center m-2 text-center" >
         {% for post in posts%}
              `<div class="card" style="width: 18rem;">
@@ -57,4 +26,7 @@
         </div>
         {% endfor %}
     </div>
+    
+</div>
+
 {% endblock %}

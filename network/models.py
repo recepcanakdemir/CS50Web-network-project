@@ -37,7 +37,8 @@ class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="like_owner",null=True)
 
 class Follower(models.Model):
-    pass
+    followers = models.ManyToManyField(User,related_name="followers",blank = True)
+    following = models.ManyToManyField(User,related_name="following",blank = True)
 
 ##class Profie(models.Model):
     ##user = models.ForeignKey(User, on_delete = models.CASCADE, null = False, default= False)
