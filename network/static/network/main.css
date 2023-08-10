@@ -7,9 +7,17 @@
 #liked-button{
     color:red ;
 }
-
+.edit-button{
+    color: gray;
+}
 #liked-button:hover{
     color:rgb(176, 33, 33) ;
     cursor: pointer;
+}
+#create-new-post-view{
+  width: 50px; 
+}
+#general-post-container:hover{
+    background-color: #f7f7f7;
 }
 

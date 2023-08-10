@@ -83,6 +83,8 @@ async function followUnfollow(username){
 
 
 function hideEditView(post){
+    console.log("a1", post.childNodes[1])
+    console.log("a2", post.childNodes[3])
     post.childNodes[1].className = 'd-none'
     post.childNodes[3].className = 'd-block'
 }
@@ -90,6 +92,7 @@ function hideEditView(post){
 function saveTheChanges(post){
   const postID = post.getAttribute('id');
     const newContext = post.childNodes[1].childNodes[1].childNodes[1].value
+    console.log("newContext",newContext)
     console.log(newContext)
     console.log(postID)
     fetch(`../posts/edit/${postID}`,{
@@ -107,7 +110,8 @@ function saveTheChanges(post){
 }
 
 function updatePostContent(post, newContext){
-  post.childNodes[3].childNodes[3].innerHTML = newContext
+  console.log("update",)
+post.childNodes[3].childNodes[3].childNodes[1].childNodes[1].childNodes[1] = newContext
 }
 
 function displayEditView(post){
@@ -120,7 +124,8 @@ function displayEditView(post){
     edit_views.className = 'd-block'
     post_content_views.className = 'd-none'
     console.log("this is edit-views",edit_views.childNodes[1].childNodes[1])
-    edit_views.childNodes[1].childNodes[1].value = post_content_views.childNodes[3].innerHTML
+    console.log(" askjdl",)
+    edit_views.childNodes[1].childNodes[1].value = post_content_views.childNodes[3].childNodes[1].childNodes[1].childNodes[1].innerHTML
     
 }
 
@@ -151,7 +156,7 @@ async function likePost(post){
           post.querySelector('.like-button').classList.add('fa-heart-o')
           post.querySelector('.like-button').style.color = 'black'
         }
-        post.querySelector('#likes').innerHTML = `${data.likes} Likes`
+        post.querySelector('#likes').innerHTML = `${data.likes}`
       })
   }else{
     console.log("he,")
