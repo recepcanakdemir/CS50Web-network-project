@@ -59,57 +59,70 @@ def like_unlike(request,post_id):
         return JsonResponse({'likes':post.likes},status=400, safe=False)
 
 def load_profile(request,username):
-    if request.method == 'PUT':
-        profile_owner = User.objects.get(username = username)
-        follower_user = request.user
+    profile_owner = User.objects.get(username = username)
+    follower_user = request.user
+    if follower_user.is_authenticated:
+        if request.method == 'PUT':
+            profile_owner = User.objects.get(username = username)
+            follower_user = request.user
+            try:
+                user_follow_object = Follower.objects.get(followers=follower_user)
+            except Follower.DoesNotExist:
+                user_follow_object = None
+            if user_follow_object is None:
+                user_follow_object = Follower.objects.create()
+                user_follow_object.followers.add(follower_user)
+                user_follow_object.save()
+            
+            if user_follow_object.following.contains(profile_owner):
+                user_follow_object.following.remove(profile_owner)
+                is_following = False
+                user_follow_object.save()
+            else:
+                user_follow_object.following.add(profile_owner)
+                is_following = True 
+                user_follow_object.save()
+            #live_followers_for_frontend = len(Follower.objects.get(followers = profile_owner).following.all())
+            live_followers_for_frontend = len(Follower.objects.filter(following = profile_owner))
+            return JsonResponse([{'followers':live_followers_for_frontend},{'is_following':is_following}],safe = False)
+            #create new FollowObject for follower user
         try:
             user_follow_object = Follower.objects.get(followers=follower_user)
         except Follower.DoesNotExist:
             user_follow_object = None
         if user_follow_object is None:
-            user_follow_object = Follower.objects.create()
-            user_follow_object.followers.add(follower_user)
-            user_follow_object.save()
-        
-        if user_follow_object.following.contains(profile_owner):
-            user_follow_object.following.remove(profile_owner)
-            is_following = False
-            user_follow_object.save()
+            is_following = "Follow" 
+        elif user_follow_object.following.contains(profile_owner):
+            is_following = "Unfollow" 
         else:
-            user_follow_object.following.add(profile_owner)
-            is_following = True 
-            user_follow_object.save()
-        #live_followers_for_frontend = len(Follower.objects.get(followers = profile_owner).following.all())
-        live_followers_for_frontend = len(Follower.objects.filter(following = profile_owner))
-        return JsonResponse([{'followers':live_followers_for_frontend},{'is_following':is_following}],safe = False)
-        #create new FollowObject for follower user
-
-    user = get_object_or_404(User, username = username)
-    visitor = request.user
+            is_following = "Follow" 
+    else:
+        is_following = "Follow"
     #how many followers does user have
-    if Follower.objects.filter(following=user):
-        followers = len(Follower.objects.filter(following=user))
+    if Follower.objects.filter(following=profile_owner):
+        followers = len(Follower.objects.filter(following=profile_owner))
     else:
         followers = 0
 
     #how many people user is following
     for obj in Follower.objects.all():
-        if obj.followers.contains(user):
+        if obj.followers.contains(profile_owner):
             is_user_following_someone = True 
             break
         else:   
             is_user_following_someone = False
     if is_user_following_someone:
-        following = len(get_object_or_404(Follower, followers = user).following.all())
+        following = len(get_object_or_404(Follower, followers = profile_owner).following.all())
     else:
         following= 0
-    posts = Post.objects.all().filter(creator = user).order_by('-created_at')
+    posts = Post.objects.all().filter(creator = profile_owner).order_by('-created_at')
     return render(request, "network/profile.html",{
        "following":following,
         "followers":followers,
         "profile_owner":username,
         "posts": posts,
-        "visitor":visitor
+        "visitor":follower_user,
+        "is_following":is_following,
     })
 
 def following_posts(request):

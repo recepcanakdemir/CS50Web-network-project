@@ -4,7 +4,7 @@
     <div id="user_name">{{profile_owner}}</div>
     {% if not profile_owner == user.username %}
     <div id="follow-unfollow">
-        <a href="#" id="follow-button" class="btn btn-primary follow-button" aria-hidden="true">Follow</a>
+        <a href="#" id="follow-button" class="btn btn-primary follow-button" aria-hidden="true">{{is_following}}</a>
     </div>
     {% endif %}
     <h4> Followers: <span id="followers">{{followers}}</span></h4>
