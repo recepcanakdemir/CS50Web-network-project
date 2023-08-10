@@ -1,34 +1,53 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div id="user_name">{{profile_owner}}</div>
-    {% if not profile_owner == user.username and not user_not_logged_in %}
-    <div id="follow-unfollow">
-        <a href="#" id="follow-button" class="btn btn-primary follow-button" aria-hidden="true">{{is_following}}</a>
-    </div>
-    {% elif profile_owner == user.username %}
-
-    {% else %}
-    <div id="fake-button">
-        <a href="#" class="btn btn-primary" aria-hidden="true">Follows</a>
+<div class="m-auto">
+    <div class="d-flex row text-center">
+        <div id="user_name" class="text-center fs-1">{{profile_owner}}</div>
+        {% if not profile_owner == user.username and not user_not_logged_in %}
+        <div id="follow-unfollow" class="">
+            <a href="#" id="follow-button" class="text-center btn btn-primary follow-button" aria-hidden="true">{{is_following}}</a>
+        </div>
+        {% elif profile_owner == user.username %}
+        {% else %}
+        <div id="fake-button" class="m-auto">
+            <a href="#" class="btn btn-primary text-center" aria-hidden="true">Follow</a>
+        </div>
     </div>
     {% endif %}
-    <h4> Followers: <span id="followers">{{followers}}</span></h4>
-    <h4> Following: <span id="following">{{following}}</span></h4>
+    <div class="d-flex justify-content-center">
+        <div class="m-2">
+            <h4 id="followers" class="m-2 text-center">{{followers}}</h4>
+            <h5>Followers</h5>
+        </div>
+        <div class="m-2">
+            <h4 id="following" class="m-2 text-center">{{following}}</h4>
+            <h5>Following</h5>
+        </div>
+    </div>
+
+</div>
 
     {% if user.is_authenticated %}
         {% if profile_owner == visitor.username %}
-        <div id="create-new-post-view " class="border border-dark w-50 row justify-content-center align-items-center">
-            <h2>Write Your Toughts Here</h2>
-            <form action = "{% url 'create_new_post' %}" method = "post" id="create-new-post">
+            <div id="create-new-post-view " class="mt-2 text-center align-items-center justify-content-center">
+        <div class="w-50 m-auto rounded">
+            <h2 class="p-2 text-muted">Write Your Toughts Here</h2>
+            <form action = "{% url 'create_new_post' %}" method = "post"  class="justify-content-center" id="create-new-post">
                 {% csrf_token %}
-                <textarea class="m-2" name = "content"id="text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
-                <input id = "create-post-button" type="submit" class="btn btn-primary" disabled/>
+                <div class="d-flex row w-50 m-auto">
+                    <textarea class="p-2 m-2 border border-2 rounded w-20" name = "content" id="text-area" placeholder="What's happening" rows="4" cols="1" style="resize:none"></textarea>
+                    <div class="mt-1">
+                        <input id = "create-post-button" value = "Share" type="submit" class="btn btn-primary w-3" disabled/>
+                    </div>
+                </div>
             </form>
         </div>
+   </div>
         {% endif %}
     {% endif %}
-    <div id="post-container">
+
+<div id="post-container" class="w-50 m-auto">
     <div id = "invalid-post-error">
     {% if messages %}
         {% for message in messages %}
@@ -38,48 +57,68 @@
         {% endfor %}
     {% endif %} 
     </div>
-
+ 
     <div id="all-posts" class="row justify-content-center m-2 text-center" >
-        {% for post in posts%}
-             `<div class="card" style="width: 18rem;">
-          <div class="card-body post" id={{post.id}}>
+        {% for post in posts %}
+    <div id="general-post-container" class="border border-1 w-100 rounded " style="width: 18rem;">
+        <div class="m-none post p-4" id={{post.id}}>
+
               <div id="edit-view" class="d-none">
                 <form id="edit-selected-post">
-                  <textarea class="m-2" id="context-text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
+                  <textarea class="m-2 border border-1 rounded w-50" id="context-text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
                   <input type="submit" class="btn btn-primary save-button" value="Save"/>
                 </form>
               </div>  
-                <div id="post-content-view" class="d-block">
-                  <a href="{% url 'load_profile' username=post.creator %}" id="user" class="username">{{post.creator}}</a>
-                  <p class="card-text" id="content">{{post.content}}</p>
-                  <p class="card-text" id="date">{{post.created_at}}</p>
-                  <h4 class="card-text" id="likes">{{post.likes}} Likes</h5>
-                  {% if post in liked_posts %}
-                    <i id="liked-button" class="fa fa-heart fa-2x like-button" aria-hidden="true"></i>
-                  {% else %}
-                    <i id="like-button" class="fa fa-heart-o fa-2x like-button" aria-hidden="true"></i>
-                  {% endif %}
+
+            <div id="post-content-view" class="d-block">
+
+                <div class="d-flex justify-content-between">
+                  <a href="{% url 'load_profile' username=post.creator %}" id="user" class="m-1 username text-decoration-none fs-5">{{post.creator}}</a>
                   {% if user == post.creator %}
-                    <i class="fa fa-edit fa-2x edit-button" aria-hidden="true"></i>
+                    <i class="fa fa-edit fa-lg edit-button" aria-hidden="true"></i>
                   {% endif %}
                 </div>
+
+                <div class="d-flex row">
+                    <div class="d-flex row pull-left">
+                        <div>
+                            <p class="text-start m-1 fs-4" id="content">{{post.content}}</p>
+                        </div>
+                        <div>
+                            <p class="m-1 text-start" id="date">{{post.created_at}}</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex">
+                        {% if post in liked_posts %}
+                            <i id="liked-button" class="m-1 fa fa-heart fa-2x like-button" aria-hidden="true"></i>
+                        {% else %}
+                            <i id="like-button" class="m-1 fa fa-heart-o fa-2x like-button" aria-hidden="true"></i>
+                        {% endif %}
+                        <h4 class="card-text m-1" id="likes">{{post.likes}}</h5>
+                    </div>
+                </div>
             </div>
+
         </div>
+    </div>
         {% endfor %}
-        <div class="pagination">
-            <span class="step-links">
+
+    </div>
+        <div class="pagination m-4">
+            <span class="step-links m-auto">
                 {% if posts.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ posts.previous_page_number }}">previous</a>
+                    <a href="?page=1" class="btn btn-warning">&laquo; first</a>
+                    <a href="?page={{ posts.previous_page_number }}" class="btn btn-danger">previous</a>
                 {% endif %}
 
-                <span class="current">
-                    Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+                <span class="current m-2 p-2 fs-4 bg-secondary text-light rounded">
+                    Page {{ posts.number }} of {{ posts.paginator.num_pages }}
                 </span>
 
                 {% if posts.has_next %}
-                    <a href="?page={{ posts.next_page_number }}">next</a>
-                    <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+                    <a href="?page={{ posts.next_page_number }}" class="btn btn-danger">next</a>
+                    <a href="?page={{ posts.paginator.num_pages }}" class="btn btn-warning">last &raquo;</a>
                 {% endif %}
             </span>
         </div>
