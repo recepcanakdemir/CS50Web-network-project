@@ -1,5 +1,6 @@
 import json
 from django.contrib.auth import authenticate, login, logout
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required 
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
@@ -13,9 +14,20 @@ from .models import User, Post, Like, Follower
 
 def index(request):
     all_posts = Post.objects.all().order_by('-created_at')
+    paginator = Paginator(all_posts,10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    if request.user.is_authenticated:
+        likes = Like.objects.filter(user = request.user)
+        liked_posts = []
+        for like in likes:
+            liked_posts.append(like.post)
+    else:
+        liked_posts = None
     return render(request, "network/index.html",{
-        "posts":all_posts,
-        "user":request.user
+        "posts":page_obj,
+        "user":request.user,
+        "liked_posts":liked_posts
     })
 
  
@@ -62,6 +74,11 @@ def load_profile(request,username):
     profile_owner = User.objects.get(username = username)
     follower_user = request.user
     if follower_user.is_authenticated:
+        user_not_logged_in = False
+        likes = Like.objects.filter(user = follower_user)
+        liked_posts = []
+        for like in likes:
+            liked_posts.append(like.post)
         if request.method == 'PUT':
             profile_owner = User.objects.get(username = username)
             follower_user = request.user
@@ -72,6 +89,8 @@ def load_profile(request,username):
             if user_follow_object is None:
                 user_follow_object = Follower.objects.create()
                 user_follow_object.followers.add(follower_user)
+                user_follow_object.save()
+                user_follow_object.following.remove(request.user)
                 user_follow_object.save()
             
             if user_follow_object.following.contains(profile_owner):
@@ -98,6 +117,8 @@ def load_profile(request,username):
             is_following = "Follow" 
     else:
         is_following = "Follow"
+        liked_posts = None
+        user_not_logged_in = True
     #how many followers does user have
     if Follower.objects.filter(following=profile_owner):
         followers = len(Follower.objects.filter(following=profile_owner))
@@ -116,33 +137,43 @@ def load_profile(request,username):
     else:
         following= 0
     posts = Post.objects.all().filter(creator = profile_owner).order_by('-created_at')
+    paginator = Paginator(posts,10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/profile.html",{
        "following":following,
         "followers":followers,
         "profile_owner":username,
-        "posts": posts,
+        "posts": page_obj,
         "visitor":follower_user,
         "is_following":is_following,
+        "liked_posts":liked_posts,
+        "user_not_logged_in": user_not_logged_in,
     })
 
 def following_posts(request):
     if request.user.is_authenticated:
-        if Follower.objects.filter(followers = request.user):
-            following = Follower.objects.filter(followers = request.user)[0].following.all()
+        if Follower.objects.filter(followers=request.user):
+            following = Follower.objects.filter(followers=request.user).first().following.all()
             posts = Post.objects.all()
-            followings_posts = []
-            for post in posts:
-                if following.contains(post.creator):
-                    followings_posts.append(post)
+            followings_posts = [post for post in posts if post.creator in following]
             followings_posts.reverse()
         else:
             followings_posts = []
             following = None
-        return render(request, "network/following.html",{
-        "following":following,
-        "posts":followings_posts,
+
+        likes = Like.objects.filter(user=request.user)
+        liked_posts = [like.post for like in likes]
+
+        paginator = Paginator(followings_posts, 10)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        return render(request, "network/following.html", {
+            "following": following,
+            "posts": page_obj,
+            "liked_posts": liked_posts
         })
-        
     else:
         return JsonResponse({"error":"You should logged in to see following posts"})
 
@@ -159,7 +190,8 @@ def edit_post(request, post_id):
             post.content = data["content"]
         post.save()
         return HttpResponse(status=204)
-
+    else:
+        return HttpResponse(status=400)
 
 
 

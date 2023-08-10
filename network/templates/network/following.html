@@ -17,15 +17,37 @@
                   <p class="card-text" id="content">{{post.content}}</p>
                   <p class="card-text" id="date">{{post.created_at}}</p>
                   <h4 class="card-text" id="likes">{{post.likes}} Likes</h5>
-                  <a href="#" class="btn btn-primary like-button" aria-hidden="true">Like</a>
+                  {% if post in liked_posts %}
+                    <i id="liked-button" class="fa fa-heart fa-2x like-button" aria-hidden="true"></i>
+                  {% else %}
+                    <i id="like-button" class="fa fa-heart-o fa-2x like-button" aria-hidden="true"></i>
+                  {% endif %}
                   {% if user == post.creator %}
-                    <a href="#" class="btn btn-success edit-button" aria-hidden="true">Edit</a>
+                    <i class="fa fa-edit fa-2x edit-button" aria-hidden="true"></i>
                   {% endif %}
                 </div>
             </div>
         </div>
         {% endfor %}
-    </div>
+      </div>
+            <div class="pagination">
+            <span class="step-links">
+                {% if posts.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ posts.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+                </span>
+
+                {% if posts.has_next %}
+                    <a href="?page={{ posts.next_page_number }}">next</a>
+                    <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
     
 </div>
 

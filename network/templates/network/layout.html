@@ -5,10 +5,11 @@
     <head>
         <title>{% block title %}Social Network{% endblock %}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link href="{% static 'network/styles.css' %}" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
         <script src="/static/network/index.js"></script>
+        <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+        <link href="{% static 'network/main.css' %}" rel="stylesheet">
     </head>
     <body>
 
@@ -19,7 +20,7 @@
               <ul class="navbar-nav mr-auto">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                    <a class="nav-link" href="#" id="current-user"><strong>{{ user.username }}</strong></a>
+                    <a class="nav-link" href="{% url 'load_profile' user.username %}" id="current-user"><strong>{{ user.username }}</strong></a>
                     </li>
                 {% endif %}
                 <li class="nav-item">
@@ -56,6 +57,13 @@
                 You should type something for post.
             </div>
           </div>
+
+          <div id="follow-error" class="d-none">
+            <div class="alert alert-danger" role="alert">
+                You should be logged in to follow a user.
+            </div>
+          </div>
+
 
 
         <div class="body">

@@ -139,6 +139,18 @@ async function likePost(post){
         return response.json()
       }).then(data => {
         console.log(data);
+        console.log(parseInt(post.querySelector('#likes').innerHTML))
+        if(post.querySelector('.like-button').classList.contains('fa-heart-o')){
+          post.querySelector('.like-button').classList.contains('fa-heart-o')
+          post.querySelector('.like-button').classList.remove('fa-heart-o')
+          post.querySelector('.like-button').classList.add('fa-heart')
+          post.querySelector('.like-button').style.color = 'red'
+        }else{
+          post.querySelector('.like-button').classList.contains('fa-heart')
+          post.querySelector('.like-button').classList.remove('fa-heart')
+          post.querySelector('.like-button').classList.add('fa-heart-o')
+          post.querySelector('.like-button').style.color = 'black'
+        }
         post.querySelector('#likes').innerHTML = `${data.likes} Likes`
       })
   }else{
@@ -146,6 +158,9 @@ async function likePost(post){
     displayError(document.querySelector('#like-error'));
   }
    
+}
+function fakeButton(){
+  displayError(document.querySelector('#follow-error'))
 }
 function displayError(error){
   error.className = 'd-block'
@@ -158,6 +173,7 @@ function init(){
   const textArea =  document.querySelector('#text-area');
   const likeBtn = document.querySelector('#all-posts');
   const followBtn = document.querySelector('#follow-unfollow')
+  const fakeBtn = document.querySelector('#fake-button')
   if(textArea){
     textArea.addEventListener('keyup', getTextAreaValue)
   }
@@ -165,7 +181,10 @@ function init(){
     likeBtn.addEventListener('click', updateData);
   }if(followBtn){
     followBtn.addEventListener('click',updateData)
+  }if(fakeBtn){
+    fakeBtn.addEventListener('click',fakeButton)
   }
+
 }
 
 document.addEventListener('DOMContentLoaded', init)
