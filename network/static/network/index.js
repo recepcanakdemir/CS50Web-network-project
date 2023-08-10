@@ -1,38 +1,10 @@
-async function getAllPosts(){
-    const allPosts = await fetch('/posts').then((response) => response.json())
-    console.log(allPosts);
-    allPosts.forEach((post) => {
-        const container = document.querySelector('#all-posts') 
-        const div = document.createElement('div');
-        let username = ""
-        if(document.querySelector('#current-user')){
-          username =  document.querySelector('#current-user').textContent.split(" ")[0];
-        }
-        else{
-            username=""
-        }
-        const editBtn =  post.creator === username ?  '<a href="#" class="btn btn-success edit-button" aria-hidden="true">Edit</a>':  '<div></div>'
-        div.innerHTML = `<div class="card" style="width: 18rem;">
-          <div class="card-body post" id=${post.id}>
-              <div id="edit-view" class="d-none">
-                <form id="edit-selected-post">
-                  <textarea class="m-2" id="text-area" placeholder="Your thoughts" rows="3" cols=""></textarea>
-                  <input type="submit" class="btn btn-primary save-button" value="Save"/>
-                </form>
-              </div>
-                <div id="post-content-view" class="d-block">
-                  <a href="users/${post.creator}/" id="user" class="username">${post.creator}</a>
-                  <p class="card-text" id="content">${post.content}</p>
-                  <p class="card-text" id="date">${post.created}</p>
-                  <h4 class="card-text" id="likes">${post.likes} Likes</h5>
-                  <a href="#" class="btn btn-primary like-button" aria-hidden="true">Like</a>
-                  ${editBtn}
-                </div>
-            </div>
-        </div>`
-        container.appendChild(div)
-    })
-
+function getTextAreaValue(e){
+  if(e.target.value == "" || e.target.value.trim().lenght ==0){
+    document.querySelector('#create-post-button').setAttribute('disabled','')
+  }
+  else{
+    document.querySelector('#create-post-button').removeAttribute('disabled')
+  }
 }
 function getCookie(name) {
   let cookieValue = null;
@@ -50,33 +22,69 @@ function getCookie(name) {
   return cookieValue;
 }
 
-//Like posts via AJAX PUT request
-function updatePost(e) {
-  // e.preventDefault()
-    if(e.target.classList.contains('like-button')){
-      if(document.querySelector('#current-user')){
-        const post = e.target.closest('.post');
-        console.log(post)
-        likePost(post)
-      }else{
-        displayError(document.querySelector('#like-error'))
-      }
-    }else if(e.target.classList.contains('edit-button')){
-      const post = e.target.closest('.post');
-      console.log(post)
-      displayEditView(post)
-  
-    }else if(e.target.classList.contains('save-button')){
-      const post = e.target.closest('.post');
-      const newContext = saveTheChanges(post)
-      updatePostContent(post, newContext)
-      hideEditView(post);
+function updateData(e){
+  if(e.target.classList.contains('like-button')){
+    e.preventDefault()
+    const post = e.target.closest('.post');
+    likePost(post);
+  }
+  else if(e.target.classList.contains('edit-button')){
+    e.preventDefault()
+    const post = e.target.closest('.post');
+    displayEditView(post)
+  }
+  else if(e.target.classList.contains('save-button')){
+    e.preventDefault()
+    const post = e.target.closest('.post');
+    newContext =  saveTheChanges(post)
+    updatePostContent(post, newContext)
+    hideEditView(post)
+  }else if(e.target.classList.contains('user')){
+    const post = e.target.closest('.post');
+    displayEditView(post)
+  }
+  else if(e.target.classList.contains('follow-button')){
+    e.preventDefault()
+    const username = document.querySelector('#user_name').innerHTML
+    console.log(username)
+    followUnfollow(username)
+  }
+  else if(e.target.classList.contains('unfollow-button')){
+    e.preventDefault()
+  //  followUnfollow(username)
+  }
+  else{
 
-    }
-    else{
-      return
-    }
+    return
+  }
+}
 
+async function followUnfollow(username){
+    await fetch(`../users/${username}`, {
+        method: 'PUT',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCookie('csrftoken'),         
+        },
+      })
+      .then(response => {
+        console.log(response)
+        return response.json()
+      }).then(data => {
+        document.querySelector('#followers').innerHTML = `${data[0].followers}`
+        if(data[1].is_following == false){
+          document.querySelector('#follow-button').innerHTML = "Follow"
+        }else{
+          document.querySelector('#follow-button').innerHTML = "Unfollow"
+        }
+        console.log(data)
+      })
+}
+
+
+function hideEditView(post){
+    post.childNodes[1].className = 'd-none'
+    post.childNodes[3].className = 'd-block'
 }
 
 function saveTheChanges(post){
@@ -84,7 +92,7 @@ function saveTheChanges(post){
     const newContext = post.childNodes[1].childNodes[1].childNodes[1].value
     console.log(newContext)
     console.log(postID)
-    fetch(`posts/edit/${postID}`,{
+    fetch(`../posts/edit/${postID}`,{
       method:'PUT',
       credentials: 'include',
         headers: {
@@ -102,11 +110,6 @@ function updatePostContent(post, newContext){
   post.childNodes[3].childNodes[3].innerHTML = newContext
 }
 
-function hideEditView(post){
-    post.childNodes[1].className = 'd-none'
-    post.childNodes[3].className = 'd-block'
-}
-
 function displayEditView(post){
    console.log(post.childNodes)
     // Get the second childNodes which is textarea to edit and get the fourth childNode 
@@ -121,35 +124,44 @@ function displayEditView(post){
     
 }
 
-
-function likePost(post){
+async function likePost(post){
+  if(document.querySelector('#current-user')){
     const postID = post.getAttribute('id');
-    try{
-      fetch(`/posts/${postID}`, {
+    console.log(postID)
+      await fetch(`/posts/${postID}`, {
         method: 'PUT',
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': getCookie('csrftoken'), // Don't forget to include the CSRF token
+          'X-CSRFToken': getCookie('csrftoken'),         
         },
       })
       .then(response => {
         return response.json()
       }).then(data => {
         console.log(data);
+        console.log(parseInt(post.querySelector('#likes').innerHTML))
+        if(post.querySelector('.like-button').classList.contains('fa-heart-o')){
+          post.querySelector('.like-button').classList.contains('fa-heart-o')
+          post.querySelector('.like-button').classList.remove('fa-heart-o')
+          post.querySelector('.like-button').classList.add('fa-heart')
+          post.querySelector('.like-button').style.color = 'red'
+        }else{
+          post.querySelector('.like-button').classList.contains('fa-heart')
+          post.querySelector('.like-button').classList.remove('fa-heart')
+          post.querySelector('.like-button').classList.add('fa-heart-o')
+          post.querySelector('.like-button').style.color = 'black'
+        }
         post.querySelector('#likes').innerHTML = `${data.likes} Likes`
-
       })
-      .catch(error => {
-        console.log('Fetch error:', error);
-        const likeError = document.querySelector('#like-error');
-        displayError(likeError);
-      });
-    }catch(error){
-      console.log(error)
-    }
-
+  }else{
+    console.log("he,")
+    displayError(document.querySelector('#like-error'));
+  }
+   
 }
-
+function fakeButton(){
+  displayError(document.querySelector('#follow-error'))
+}
 function displayError(error){
   error.className = 'd-block'
         setTimeout(() => {
@@ -157,38 +169,22 @@ function displayError(error){
         }, 2000);
 }
 
-async function getPostById(postID){
-  const posts = await fetch('/posts').then(response => response.json)
-  console.log(posts)
-}
-
-
-async function createNewPost(){
-    await fetch('/posts',{
-        method: 'POST',
-        body: JSON.stringify({
-            content:document.querySelector('#text-area').value,
-        })
-    })
-    .then((response) => response.json())
-    .then(data =>{
-      console.log(data)
-    })
-}
-
 function init(){
-   if(document.querySelector('#all-posts')){
-      document.addEventListener('submit', createNewPost)
-      document.querySelector('#all-posts').addEventListener('click',updatePost)
-      getAllPosts()
-   }
-   else{
-    console.log("hello")
-   }
-   document.querySelector('#like-error').className = 'd-none'
-   //hideError(document.querySelector('#like-error'))
-    //document.querySelector('#all-posts-link').addEventListener('click',getAllPosts)
-    //do the things
+  const textArea =  document.querySelector('#text-area');
+  const likeBtn = document.querySelector('#all-posts');
+  const followBtn = document.querySelector('#follow-unfollow')
+  const fakeBtn = document.querySelector('#fake-button')
+  if(textArea){
+    textArea.addEventListener('keyup', getTextAreaValue)
+  }
+  if(likeBtn){
+    likeBtn.addEventListener('click', updateData);
+  }if(followBtn){
+    followBtn.addEventListener('click',updateData)
+  }if(fakeBtn){
+    fakeBtn.addEventListener('click',fakeButton)
+  }
+
 }
 
 document.addEventListener('DOMContentLoaded', init)
