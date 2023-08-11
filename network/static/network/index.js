@@ -111,7 +111,7 @@ function saveTheChanges(post){
 
 function updatePostContent(post, newContext){
   console.log("update",)
-post.childNodes[3].childNodes[3].childNodes[1].childNodes[1].childNodes[1] = newContext
+  post.childNodes[3].childNodes[3].childNodes[1].childNodes[1].childNodes[1].innerHTML = newContext
 }
 
 function displayEditView(post){
